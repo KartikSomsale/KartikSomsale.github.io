@@ -30,6 +30,16 @@ tags:
   - name: SavingsVersion
     description: Savings Protocal
 paths:
+  /people/1/:
+    get:
+      summary: "Default API Test"
+      responses:
+        "200":
+          description: "APi Response"
+          content:
+            application/json:
+              schema:
+                type: object
   /users:
     post:
       tags:
