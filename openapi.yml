@@ -1,0 +1,944 @@
+openapi: 3.0.4
+info:
+  title: CarbonTech - Open API
+  description: |-
+    This contains CarbonTech API Documentations.
+  contact:
+    email: "kartik@gmail.com"
+    name: "Kartik Somasale"
+    
+    
+  version: 1.0.1
+servers:
+  - url: http://192.168.1.175:9090/api
+  - url: https://swapi.dev/api
+tags:
+  - name: Users
+    description: Everything about User
+  - name: consultant
+    description: Everything about Consultant
+  - name: customer
+    description: Customer Related APIs
+  - name: location
+    description: Customer Locations
+  - name: EMFDB
+    description: Emission Factor DB
+  - name: EMFVersion
+    description: Emission DB Versions
+  - name: SavingsModel
+    description: Savings Model
+  - name: SavingsVersion
+    description: Savings Protocal
+paths:
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Register New User.
+      description: Register New Users.
+      requestBody:
+        description: Register New User
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDTO'
+        required: true
+      responses:
+        '200':
+          description: User Created Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDTO'
+        '400':
+          description: Invalid Input Details
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Login.
+      description: Login into CarbonTech.
+      requestBody:
+        description: Request Body For Login
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "sudhakar01@gmail.com"
+                password:
+                  type: string
+                  example: "123456"
+      responses:
+        '200':
+          description: Login Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: string
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                  phoneNumber:
+                    type: string
+                  email:
+                    type: string
+                  roleId:
+                    type: integer
+                  status:
+                    type: string
+                  bearerToken:
+                    type: string
+        '401':
+          description: Invalid Credentials
+          content:
+              text/plain:
+                schema:
+                  type: string
+  /customers-master:
+    post:
+      description: "Register Consultant Customer"
+      tags:
+        - customer
+      summary: Register Consultant Customer.
+      requestBody:
+        description: Request Body to register customer
+        $ref: "#/components/requestBodies/CustomerMaster"
+      responses:
+        '201':
+          description: Customer Registered Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerMaster'
+        '401':
+          description: Unauthorized
+    get:
+      tags:
+        - customer
+      description: "Get All Customer Details"
+      summary: "Get All Customer Details"
+      responses:
+        "200":
+          description: "Fetch List of Customers"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerMaster"
+  /customers-master/{customerID}:
+    put:
+      tags: 
+        - customer
+      description: API to Update Customer Details
+      summary: "Update Selected Customer Details"
+      parameters: 
+        - in: path
+          name: customerID
+          schema:
+            type: integer
+          required: true
+          description: Customer Id
+          example: 585
+      requestBody:
+        description: Request Body to register customer
+        $ref: "#/components/requestBodies/CustomerMaster"
+      responses:
+        "200":
+          description: "Customer Updated Successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerMaster"
+    get:
+      tags:
+        - customer
+      summary: "Fetch Selected Customer Details"
+      description: "Fetch Customer Details"
+      parameters: 
+      - in: path
+        name: customerID
+        required: true
+        schema:
+          type: integer
+        example: 585
+      responses:
+        "200":
+          description: "Customer DTO"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerMaster"
+        "404":
+          description: "Invalid CustomerId"
+      security: 
+        - bearerAuth: []
+    delete:
+      tags:
+        - customer
+      description: "Delete Customer"
+      summary: "Delete Customer Details"
+      parameters: 
+        - in: path
+          name: customerID
+          required: true
+          description: Customer Auto Generated ID
+          schema:
+            type: integer
+          example: 585
+      responses:
+        "200":
+          description: "Customer Deleted Successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommonResponseDTO"
+        "500":
+          description: "Customer Not found or Invalid Customer Id"
+  /carbon-company-id/{consultantID}:
+    get:
+      tags:
+        - customer
+      summary: "Fetch Consultant Customers"
+      parameters: 
+        - in: path
+          name: consultantID
+          required: true
+          description: "Consultant Id"
+          example: 575
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "List of Consultant Customers"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerMaster"
+  /customer-type-id/{customerTypeId}:
+    get:
+      tags:
+        - customer
+      summary: "Fetch customers based on Customer Type"
+      parameters:
+        - in: path
+          name: customerTypeId
+          required: true
+          examples:
+            Corporate:
+              value: 1
+            HouseHold:
+              value: 2
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "List of Customers"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref : "#/components/schemas/CustomerMaster"
+  /customer-locations-departments-process:
+    post:
+      tags: 
+        - location
+      summary: "Create Customer/Consultant Location"
+      requestBody:
+        $ref: "#/components/requestBodies/LocationDTOReq"
+      responses:
+        "200":
+          description: "Location Created Successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationDTO'
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: '#/components/responses/403'
+  /customer-locations-departments-process/{locationId}:
+    get:
+      tags:
+        - location
+      summary: "Fetch Customer Location Details"
+      parameters: 
+        - in: path
+          required: true
+          name: locationId
+          example: 574
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Location details fetched"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocationDTO"
+        "400":
+          description: "Not found"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: '#/components/responses/403'
+  /customer-locations-departments-process/fetchLocationsByCustomerId:
+    get:
+      summary: Fetch Locations based on Consultant/Customer Id
+      tags: 
+        - location
+      parameters: 
+        - in: query
+          name: consultantId
+          required: true
+          description: Consultant Id
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: "Locations based on Consultant"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationDTO'
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: '#/components/responses/403'
+  /emf-databases:
+    get:
+      description: "Emmission Factors"
+      tags:
+        - EMFDB
+      summary: "Fetch All Emmission Factors DBs"
+      responses:
+        "200":
+          description: "Fetch Emission Factors DBs DTO"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EMFDBDTO'
+  /emf-databases/{emfDBId}:
+    get:
+      summary: "Fetch EMFDB Based on ID"
+      tags:
+        - EMFDB
+      parameters:
+        - in: path
+          name: emfDBId
+          required: true
+          description: EMF DB Id
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fetch EMF DB Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EMFDBDTO'
+  /emfdb-versions:
+    get:
+      tags:
+        - EMFVersion
+      summary: EMF DB Versions
+      responses:
+        "200":
+          description: List of EMFDB Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EMFVersionDTO'
+    post:
+      summary: Create EMF DB
+      tags:
+        - EMFDB
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EMFDBDTO'
+      responses:
+        "200":
+          description: EMF DB Created Successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EMFDBDTO'
+  /emfdb-versions/{versionId}:
+    get:
+        summary: "Fetch EMFDB Version Based on ID"
+        tags:
+          - EMFVersion
+        parameters:
+          - in: path
+            name: versionId
+            required: true
+            description: EMF DB Version Id
+            schema:
+              type: integer
+        responses:
+          "200":
+            description: Fetch EMF DB Version Details
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/EMFVersionDTO'
+  /emfdb-versions/fetchVersionsOnDBId/{emfDBId}:
+    get:
+        summary: "Fetch Verions based on EMFDB Id"
+        tags:
+          - EMFVersion
+        parameters:
+          - in: path
+            name: emfDBId
+            required: true
+            description: EMF DB Id
+            schema:
+              type: integer
+              example: 1
+        responses:
+          "200":
+            description: Fetch EMF DB Version Details
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/EMFVersionDTO'
+  /savings-models:
+    get:
+      summary: List of Savings Model
+      tags:
+        - SavingsModel
+      responses:
+        "200":
+          description: List of Savings Model
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavingsModelDTO'
+  /savings-protocol-versions:
+    get:
+      summary: List of Savings Protocol Versions
+      tags:
+        - SavingsVersion
+      responses:
+        "200":
+          description: List of Savings Protocol Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavingsVersionDTO'
+    post:
+      summary: Save Savings Model Version
+      tags:
+        - SavingsVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsVersionDTO'
+      responses:
+        "200":
+          description: "Savings Version Stored Successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsVersionDTO'
+    put:
+      summary: "Update Savings Verions based on version Id"
+      tags:
+        - SavingsVersion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsVersionDTO'
+      responses:
+        "200":
+          description: Update SUccessfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavingsVersionDTO'
+  /savings-protocol-versions/{versionId}:
+    get:
+      summary: "Fetch Savings Verions based on version Id"
+      tags:
+        - SavingsVersion
+      parameters:
+        - in: path
+          name: versionId
+          required: true
+          description: Saving Version Id
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Fetch Savings Protocol Version Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsVersionDTO'
+    delete:
+      summary: "Delete Savings Verions based on version Id"
+      tags:
+        - SavingsVersion
+      parameters:
+        - in: path
+          name: versionId
+          required: true
+          description: Saving Version Id
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Deleted Savings Protocol Version Details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsVersionDTO'
+  /savings-protocol-versions/findVersionsByModelId/{modelId}:
+    get:
+      summary: "Fetch list of Savings Verions based on Savings Model Id"
+      tags:
+        - SavingsVersion
+      parameters:
+        - in: path
+          name: modelId
+          required: true
+          description: Saving Model Id
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: List of Savings Protocol Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavingsVersionDTO'
+components:
+  schemas:
+    UserDTO:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 1
+        firstName:
+          type: string
+          minLength: 3
+          maxLength: 25
+          example: Rohit
+        lastName:
+          type: string
+          maxLength: 25
+          example: Sharma
+        phoneNumber:
+          type: string
+          example: 9111111101
+        email:
+          type: string
+        password:
+          type: string
+      required: [firstName]
+    CustomerMaster:
+      type: object
+      properties:
+        customerID: 
+          type: integer
+        carbonCompanyId:
+          type: integer
+          example: 574
+        customerTypeID:
+          type: integer
+          example: 1
+        customerName:
+          type: string
+        customerGST:
+          type: string
+        customerPAN:
+          type: string
+        customerComapnyRegistration:
+          type: string
+        supportingDocuments:
+          type: string
+        yearOfFoundation:
+          type: integer
+          example: 2025
+        legalStructure:
+          type: string
+        parentCompany:
+          type: string
+        logo:
+          type: string
+        website:
+          type: string
+          example: www.example.com
+        employeeCount:
+          type: integer
+          example: 10
+        businessDescription:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+          enum: ['Andra Pradesh', "Telangan", "Bangalore", "Maharastra"]
+        country:
+          type: string
+          enum: ["India", "USA"]
+        zipCode:
+          type: string
+          example: "580003"
+        phone:
+          type: string
+        lattLong:
+          type: string
+        emailID:
+          type: string
+        pointOfContact:
+          type: string
+        pocDesignation:
+          type: string
+        pocPhone:
+          type: string
+        pocEmail:
+          type: string
+        internationOperations:
+          type: string
+        annualRevenue:
+          type: number
+        currency:
+          type: number
+        aumMillionUsd:
+          type: number
+        totalBuiltAreaSqMet:
+          type: number
+        status:
+          type: string
+          enum: ["Y", "N"]
+        vendorCount:
+          type: integer
+        numberOfSites:
+          type: integer
+        numberOfDepartments:
+          type: integer
+        numberOfProcess:
+          type: integer
+        carbonConsultants:
+          type: object
+          properties:
+            carbonCompanyId: 
+              type: integer
+        customerType:
+          type: object
+          properties:
+            customerTypeID:
+              type: integer
+    CommonResponseDTO:
+      type: object
+      properties:
+        body:
+          type: object
+        responseStatus: 
+          type: integer
+        msg:
+          type: string
+    LocationDTO:
+      type: object
+      properties:
+        locationProcessDepartmentId:
+          type: integer
+        customerID:
+          type: integer
+          example: 576
+        locationType:
+          type: string
+          enum: ["Office", "Home"]
+        name:
+          type: string
+        gst:
+          type: string
+          pattern: "^[A-Z]{5}[0-9]{4}[A-Z]{1}$"
+          example: "ANAPS8711A"
+        pan:
+          type: string
+          pattern: "^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[0-9]{1}[A-Z]{1}[0-9]{1}$"
+          example: "07ABCDE1234F2Z6"
+        companyRegistration:
+          type: integer
+          pattern: "^[1-2]{1}[0-9]{3}$"
+          example: "2005"
+        legalStructure:
+          type: string
+        website:
+          type: string
+          example: https://www.example.com
+        employeeCount:
+          type: integer
+          minLength: 1
+          maxLength: 500
+          example: 1
+        businessDescription:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        country:
+          type: string
+        zipCode:
+          type: string
+        phone:
+          type: string
+        lattLong:
+          type: string
+        emailID:
+          type: string
+          format: email
+        pointOfContact:
+          type: string
+        pocDesignation:
+          type: string
+        pocPhone:
+          type: string
+        pocEmail:
+          type: string
+          format: email
+        internationalOperations:
+          type: string
+        annualRevenue:
+          type: number
+          format: int64
+        currency:
+          type: number
+          format: int64
+        aumMillionUsd:
+          type: number
+          format: int64
+        totalBuiltUpAreaSqMet:
+          type: number
+          format: int64
+        status:
+          type: string
+        vendorCount:  
+          type: integer
+        IsDeleted:
+          type: string
+          enum: ['Y', 'N']
+    EMFDBDTO:
+      type: object
+      properties:
+        emfDBId:
+          type: integer
+          format: int64
+          description: Auto Generated Id
+        emfDBName:
+          type: string
+          description: EMF DB Name
+          example: UKS Government GHG Conversion Factors for Company Reporting
+        emfDBDescription:
+          type: string
+          example: These factors are suitable for use by UK-based organisations of all sizes and international organisations reporting on their UK operations. Therefore, the scope of the factors is defined such that it is relevant to Streamlined Energy and Carbon Reporting (SECR) regulations. The factors may also be used for other purposes, but users do this at their own risk. Full set (for advanced users)
+        type:
+          type: string
+          example: Emissions
+        protocol:
+          type: string
+          example: GHG
+        emfDBYear:
+          type: integer
+          example: 2004
+        emfDBStatus:
+          type: string
+          enum: ['Active', 'Inactive']
+          example: Acive
+        totalEMFAvailable:
+          type: string
+          example: 2241
+        countiesOfAcceptence:
+          type: string
+          example: India
+        source:
+          type: string
+          example: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024
+        organization:
+          type: string
+          example: UK Government - Department for Energy Security and Net Zero
+    EMFVersionDTO:
+      type: object
+      properties:
+        emfDBVersionID:
+          type: number
+          format: int64
+          description: Auto Generated Id
+        emfDBID:
+          type: number
+          format: int64
+          description: EMFDB Version Auto Generated Id
+          example: 1
+        emfDBVersion:
+          type: number
+          format: float
+          example: 1
+        emfDBVersionDescription:
+          type: string
+          example: These factors are suitable for use by UK-based organisations of all sizes and international organisations reporting on their UK operations. Therefore, the scope of the factors is defined such that it is relevant to Streamlined Energy and Carbon Reporting (SECR) regulations. The factors may also be used for other purposes, but users do this at their own risk.   Full set (for advanced users)
+        emfDBVersionStartDate:
+          type: string
+          format: date
+          example: 2024-07-08
+        emfDBVersionEndDate:
+          type: string
+          format: date
+          example: 2025-06-10
+        emfDBVersionStatus:
+          type: string
+          enum: ['Active', 'Inactive']
+          example: Active
+        source:
+          type: string
+          example: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024
+    SavingsModelDTO:
+      type: object
+      properties:
+        savingsModelId:
+          type: integer
+          description: Auto Generated Id
+          example: 1
+        savingsModelName:
+          type: string
+          example: Waste Reduction Model (WARM)
+        savingsModelDescription:
+          type: string
+          example: EPA created the Waste Reduction Model to provide high-level comparisons of potential greenhouse gas emissions reductions, energy savings, and economic impacts when considering different materials management practices. Materials management practices include - source reduction, recycling, anaerobic digestion, combustion, composting and landfilling
+        savingsModelYear:
+          type: integer
+          example: 2004
+        savingsModelStatus:
+          type: string 
+          enum: ['Active', 'Inactive']
+          example: 'Active'
+        countiesOfAcceptence:
+          type: string
+          example: India
+        source:
+          type: string
+          example: https://www.epa.gov/warm
+        organization:
+          type: string
+          example: U.S. Environmental Protection Agency
+        status:
+          type: string
+          enum: ['Active', 'Inactive']
+          example: 'Active'
+        emfDatabase:
+          $ref: '#/components/schemas/EMFDBDTO'
+    SavingsVersionDTO:
+      type: object
+      properties:
+        savingsProtocolVersionID:
+          type: number
+          format: int64
+          example: 1
+        savingsModel:
+          $ref: '#/components/schemas/SavingsModelDTO'
+        savingsProtocolVersion:
+          type: string
+          example: "Version 16"
+        savingsProtocolVersionDescription:
+          type: string
+          example: |
+            EPA published WARM version 16 in December 2023: WARM Version 16 (xls) (3.44 MB) . Version 16 contains updates to several materials including food waste, mixed electronics, and the wood product construction and demolition materials. Economic factors in WARM were also updated based on newly available data. Specific changes include the following:  EPA revised the landfilling emission factors for food waste material categories to better account for the water content of each specific food type disposed of.   We revised WARM’s mixed electronics category composition to reflect more timely projections for the electronics waste stream. WARM now also includes a source reduction factor for mixed electronics that excludes cathode ray tube displays (for which a source reduction factor is not applicable because these types of displays are no longer produced).  EPA updated factors for wood flooring and wood products based on new data sources. Updates to the wood flooring material include revisions to the source reduction factor and the addition of reuse as a new management pathway (modeled under the recycling management pathway in WARM) for wood flooring. EPA also updated the source reduction and reuse factors for dimensional lumber. WARM no longer models the recycling pathway for MDF because neither recycling nor reuse is considered a viable management pathway for medium-density fiberboard.  EPA updated the economic impact factors associated with waste management processes and energy reduction and generation in WARM based on new data sources, including the 2020 U.S. Recycling Economic Information study.
+        savingsProtocolVersionStartDate:
+          type: string
+          format: date
+          example: 2024-01-01
+        savingsProtocolVersionEndDate:
+          type: string
+          format: date
+          example: 2024-12-31
+        protocolVersionStatus:
+          type: string
+          enum: ['Active', 'Inactive']
+          example: Active
+        source:
+          type: string
+          example: https://www.epa.gov/system/files/other-files/2023-12/warm_v16_openlca_database_mar2022_0.zip
+        IsDeleted:
+          type: string
+          enum: ['Y', 'N']
+          example: N
+          
+          
+  requestBodies:
+    CustomerMaster:
+      description: "Customer DTO"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CustomerMaster"
+    LocationDTOReq:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LocationDTO'
+  responses:
+    401:
+      description: "Invalid Token"
+      content:  
+        text/plain:
+          schema:
+            type: string
+            example: "Invalid Credentials / Token"
+    403:
+      description: "Token not authorized"
+      content:  
+        text/plain:
+          schema:
+            type: string
+            example: Token not authorized
+      
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
